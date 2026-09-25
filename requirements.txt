@@ -1,0 +1,2 @@
+# Pinned to the Kerykeion release this service was verified with.
+kerykeion==6.0.2

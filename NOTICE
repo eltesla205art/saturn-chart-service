@@ -1,0 +1,12 @@
+Where Is Saturn? — chart service
+Copyright (C) 2026 Ascension Media Group
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, version 3 of the License. See LICENSE.
+
+It uses Kerykeion (https://github.com/g-battaglia/kerykeion), copyright
+Giacomo Battaglia, licensed under the GNU AGPL v3, and its dependencies
+(libephemeris AGPL-3.0; skyfield MIT; numpy BSD; pydantic MIT). Chart glyph
+fonts embedded by Kerykeion: Symbola (public domain), Noto Sans Symbols 2 and
+Noto Sans (SIL OFL 1.1).
