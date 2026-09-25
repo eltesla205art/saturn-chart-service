@@ -1,14 +1,29 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/chart.py": { "maxDuration": 30, "memory": 1024 }
+    "api/chart.py": {
+      "maxDuration": 30,
+      "memory": 1024,
+      "excludeFiles": "{tests/**,examples/**,.venv/**}"
+    },
+    "api/studio.py": {
+      "maxDuration": 30,
+      "memory": 1024,
+      "excludeFiles": "{tests/**,examples/**,.venv/**}"
+    }
   },
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "no-referrer" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
       ]
     }
   ]

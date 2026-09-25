@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "saturnstudio"
+version = "1.0.0"
+description = "App-ready astrology charts in Python: natal, synastry, transits, composite, solar & lunar returns — clean JSON, SVG charts, reports, AI context and relationship scores. Built on Kerykeion."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Ascension Media Group", email = "hello@whereismysaturn.com" }]
+keywords = ["astrology", "natal chart", "synastry", "transits", "solar return", "svg", "kerykeion", "horoscope"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Astronomy",
+]
+dependencies = ["kerykeion==6.0.2"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://whereismysaturn.com/chart-studio"
+Source = "https://github.com/eltesla205art/saturn-chart-service"
+
+[tool.hatch.build.targets.wheel]
+packages = ["saturnstudio"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
