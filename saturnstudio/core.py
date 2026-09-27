@@ -337,6 +337,7 @@ class Studio:
         ayanamsa: sidereal offset — "LAHIRI" (default), "RAMAN", "KRISHNAMURTI", "FAGAN_BRADLEY".
         house_system: one-letter code from HOUSE_SYSTEMS (default "P", Placidus).
         title: optional custom chart title.
+        draw: set False to skip SVG rendering (faster when you only need data).
     """
 
     def __init__(
@@ -351,6 +352,7 @@ class Studio:
         ayanamsa: str = "LAHIRI",
         house_system: str = "P",
         title: Optional[str] = None,
+        draw: bool = True,
     ) -> None:
         if style not in STYLES:
             raise StudioError(f"style must be one of {STYLES}")
@@ -375,12 +377,15 @@ class Studio:
         self.wheel_only, self.points = wheel_only, pts
         self.zodiac, self.ayanamsa, self.house_system = zodiac, ayanamsa, house_system
         self.title = title
+        self.draw = draw
 
     # -- helpers
     def _subject(self, person: Person):
         return person.subject(self.zodiac, self.ayanamsa, self.house_system, self.points)
 
     def _draw(self, model: Any, default_title: str) -> str:
+        if not self.draw:
+            return ""
         drawer = ChartDrawer(
             model,
             theme=self.theme,

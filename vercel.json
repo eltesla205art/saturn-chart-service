@@ -12,6 +12,10 @@
     "api/interpret.py": {
       "maxDuration": 120,
       "excludeFiles": "{tests/**,examples/**,.venv/**}"
+    },
+    "api/saturn.py": {
+      "maxDuration": 30,
+      "excludeFiles": "{tests/**,examples/**,.venv/**}"
     }
   },
   "headers": [

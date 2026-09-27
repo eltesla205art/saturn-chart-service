@@ -16,6 +16,8 @@ saturnstudio — a friendly, app-ready astrology toolkit built on Kerykeion.
     chart.interpret()    # built-in plain-language reading (dict) with tarot correspondences
     chart.reading_markdown()
 
+Saturn Finder: saturn_finder(person, at=...) → Saturn at birth, on any date, and your Saturn cycle.
+
 Chart types: natal, synastry, transit, composite, solar_return, lunar_return.
 Relationship score: studio.relationship_score(a, b) or studio.synastry(a, b).score
 
@@ -35,6 +37,7 @@ from .core import (
     StudioError,
 )
 from .interpret import interpret, to_markdown
+from .saturn import saturn_finder
 from .tarot import cards_for
 
 __all__ = [
@@ -52,5 +55,6 @@ __all__ = [
     "interpret",
     "to_markdown",
     "cards_for",
+    "saturn_finder",
 ]
-__version__ = "1.1.0"
+__version__ = "1.2.0"

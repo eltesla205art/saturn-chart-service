@@ -78,7 +78,7 @@ def house_of(longitude: float, cusps: list[float]) -> Optional[int]:
 
 def _deg(p: dict) -> str:
     d = p["degree"]
-    return f"{int(d)}°{int(round((d % 1) * 60)) % 60:02d}′ {p['sign']}"
+    return f"{int(d)}°{int((d % 1) * 60):02d}′ {p['sign']}"
 
 
 def _house_line(house: Optional[int]) -> str:

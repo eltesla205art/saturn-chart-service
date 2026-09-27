@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/python-3.12%2B-blue" alt="Python 3.12+">
   <img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0">
   <img src="https://img.shields.io/badge/built%20on-Kerykeion%206-8a2be2" alt="Built on Kerykeion 6">
-  <img src="https://img.shields.io/badge/tests-45%20passing-brightgreen" alt="45 tests passing">
+  <img src="https://img.shields.io/badge/tests-51%20passing-brightgreen" alt="51 tests passing">
 </p>
 
 Give Saturn Studio someone's birth details and get back accurate planetary positions, houses, aspects, signs,
@@ -32,6 +32,7 @@ Battaglia, which does the astronomy (NASA JPL-based ephemeris) and the chart dra
 - [Reports and AI context](#reports-and-ai-context)
 - [Relationship score](#relationship-score)
 - [Chart readings](#chart-readings)
+- [Saturn Finder](#saturn-finder)
 - [Locations: offline and online](#locations-offline-and-online)
 - [HTTP API](#http-api)
 - [Examples](#examples)
@@ -91,6 +92,7 @@ Moon phase: Waning Gibbous
 | Built-in chart reading (offline) | `chart.interpret()`, `chart.reading_markdown()` |
 | Tarot correspondences | `saturnstudio.cards_for("Sun", "Taurus", 24.6)` |
 | AI deep reading (Claude) | `saturnstudio.ai.deep_reading(chart)` |
+| Saturn at birth, on any date, and your Saturn cycle | `saturnstudio.saturn_finder(person, at=...)` |
 | Online city lookup | `Person.lookup(..., city="Rome", country="IT")` |
 
 ## Chart types
@@ -192,6 +194,26 @@ reading["sections"][0]["items"][0]
 `ANTHROPIC_MODEL`, default `claude-sonnet-5`). The model only sees anonymized positions, houses and aspects, never
 names, birth dates, times, places or coordinates. See `saturnstudio.ai.anonymized(chart.data)`.
 
+## Saturn Finder
+
+`saturn_finder(person, at=None)` answers "where is my Saturn?" three ways:
+
+- **At birth:** sign, degree, house, retrograde, dignity (domicile, exaltation, detriment or fall) and Saturn's aspects.
+- **On any date** (default now): Saturn's position and motion, the natal house it is crossing, the natal points it
+  touches (applying or separating), and when it entered and will leave its current sign.
+- **Your Saturn cycle:** exact dates of every waxing square, opposition, waning square and Saturn return, from birth
+  to about age 95, with all retrograde passes, each marked past, now or upcoming.
+
+It also returns `reasoning`, a list of claims ("Saturn sits in your 5th house") each paired with the reason behind it.
+Without a birth time, houses count from the Sun sign (solar houses) and say so.
+
+```python
+from saturnstudio import Person, saturn_finder
+r = saturn_finder(me)
+r["birth"]["position"], r["birth"]["house"]      # ('25°14′ Capricorn', 5)
+[e["event"] for e in r["cycle"]["events"]][:4]   # ['Waxing Saturn square', 'Saturn opposition', …]
+```
+
 ## Locations: offline and online
 
 - **Offline (recommended):** pass `lat`, `lon` and an IANA `tz` such as `"America/New_York"`. No network needed.
@@ -206,6 +228,7 @@ This repo is also deployed as a Vercel service at `https://chart.whereismysaturn
   `api/studio.py`.
 - `POST /api/interpret`: the Claude deep reading for the same body (Markdown). `GET` reports whether it is enabled.
   It only accepts requests from whereismysaturn.com.
+- `POST /api/saturn`: the Saturn Finder (`first`, optional `at`, `options`).
 - `POST /api/chart`: a single natal SVG (used by the result page).
 
 Add `"reading"` to `include` on `/api/studio` to get the built-in reading.
@@ -228,8 +251,8 @@ pip install -e ".[dev]"
 python -m pytest
 ```
 
-The 45 tests cover reference positions (Saturn 25°14′ Capricorn for the sample chart), every chart type, return
-timing, options, sidereal mode, reports, AI context, the relationship score, the built-in reading for every chart type, tarot mapping, unknown birth times, the anonymized
+The 51 tests cover reference positions (Saturn 25°14′ Capricorn for the sample chart), every chart type, return
+timing, options, sidereal mode, reports, AI context, the relationship score, the built-in reading for every chart type, tarot mapping, unknown birth times, the Saturn Finder (ingresses, cycle dates, solar houses), the anonymized
 AI payload, the API layer and input validation.
 
 ## Privacy

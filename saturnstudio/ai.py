@@ -168,9 +168,15 @@ def call_claude(system: str, user: str, *, api_key: Optional[str] = None, model:
             resp = json.loads(r.read())
     except urllib.error.HTTPError as e:
         status = e.code
+        try:  # Anthropic error bodies never contain the key; surface a short reason
+            detail = str(json.loads(e.read()).get("error", {}).get("message", ""))[:200]
+        except Exception:
+            detail = ""
+        if "credit balance" in detail.lower():
+            raise AIError("AI readings are paused right now (account credit). Please try again later.") from None
         raise AIError({429: "The AI reader is busy. Please try again in a minute.",
                        529: "The AI reader is overloaded. Please try again shortly."}.get(
-            status, f"The AI reader returned an error ({status}).")) from None
+            status, f"The AI reader returned an error ({status}){': ' + detail if detail else ''}.")) from None
     except (urllib.error.URLError, TimeoutError):
         raise AIError("Couldn't reach the AI reader. Please try again.") from None
     text = "".join(b.get("text", "") for b in resp.get("content", []) if b.get("type") == "text").strip()
