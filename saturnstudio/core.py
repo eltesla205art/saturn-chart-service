@@ -203,6 +203,18 @@ class ChartResult:
         """Compact XML description of the chart, designed to paste into an LLM prompt."""
         return to_context(self.model)
 
+    def interpret(self) -> dict:
+        """Built-in plain-language reading (no network): sections of items with tarot correspondences."""
+        from .interpret import interpret
+
+        return interpret(self.data)
+
+    def reading_markdown(self) -> str:
+        """The built-in reading as Markdown."""
+        from .interpret import interpret, to_markdown
+
+        return to_markdown(interpret(self.data))
+
     def save_svg(self, path: str) -> str:
         with open(path, "w", encoding="utf-8") as f:
             f.write(self.svg)
@@ -386,7 +398,8 @@ class Studio:
             "house_system": HOUSE_SYSTEMS[self.house_system],
         }
 
-    def _result(self, kind: str, model: Any, title: str, subjects: list[tuple[str, Any]]) -> ChartResult:
+    def _result(self, kind: str, model: Any, title: str, subjects: list[tuple[str, Any]],
+                known: Optional[dict] = None) -> ChartResult:
         data = {
             "kind": kind,
             "settings": self._settings(),
@@ -394,6 +407,9 @@ class Studio:
             "aspects": _aspects(model),
             **_distributions(model),
         }
+        for role, ok in (known or {}).items():
+            if role in data["subjects"]:
+                data["subjects"][role]["time_known"] = bool(ok)
         score = _score(model)
         if score:
             data["relationship_score"] = score
@@ -403,12 +419,13 @@ class Studio:
     def natal(self, person: Person) -> ChartResult:
         s = self._subject(person)
         model = ChartDataFactory.create_natal_chart_data(s, active_points=self.points)
-        return self._result("natal", model, f"{person.name} — Natal Chart", [("natal", s)])
+        return self._result("natal", model, f"{person.name} — Natal Chart", [("natal", s)], {"natal": person.time_known})
 
     def synastry(self, first: Person, second: Person) -> ChartResult:
         a, b = self._subject(first), self._subject(second)
         model = ChartDataFactory.create_synastry_chart_data(a, b, active_points=self.points, include_relationship_score=True)
-        return self._result("synastry", model, f"{first.name} & {second.name} — Synastry", [("first", a), ("second", b)])
+        return self._result("synastry", model, f"{first.name} & {second.name} — Synastry", [("first", a), ("second", b)],
+                            {"first": first.time_known, "second": second.time_known})
 
     def transit(self, person: Person, when: Optional[Person] = None) -> ChartResult:
         """Transits for ``when`` (default: now, at the natal place) over the natal chart."""
@@ -419,13 +436,15 @@ class Studio:
             when = Person.now(float(person.lat), float(person.lon), str(person.tz), name="Transits", place=person.place)
         t = self._subject(when)
         model = ChartDataFactory.create_transit_chart_data(natal, t, active_points=self.points)
-        return self._result("transit", model, f"{person.name} — Transits {when.date}", [("natal", natal), ("transit", t)])
+        return self._result("transit", model, f"{person.name} — Transits {when.date}", [("natal", natal), ("transit", t)],
+                            {"natal": person.time_known, "transit": when.time_known})
 
     def composite(self, first: Person, second: Person) -> ChartResult:
         a, b = self._subject(first), self._subject(second)
         comp = CompositeSubjectFactory(a, b, chart_name=f"{first.name} & {second.name}").get_midpoint_composite_subject_model()
         model = ChartDataFactory.create_composite_chart_data(comp, active_points=self.points)
-        return self._result("composite", model, f"{first.name} & {second.name} — Composite", [("composite", comp)])
+        return self._result("composite", model, f"{first.name} & {second.name} — Composite", [("composite", comp)],
+                            {"composite": first.time_known and second.time_known})
 
     def _return(self, person: Person, kind: str, year: int, month: int, location: Optional[Person]) -> ChartResult:
         natal = self._subject(person)
@@ -440,7 +459,8 @@ class Studio:
         ret = factory.next_return_from_date(year, month, 1, return_type=rtype)
         model = ChartDataFactory.create_return_chart_data(natal, ret, active_points=self.points)
         label = "Solar Return" if rtype == "Solar" else "Lunar Return"
-        return self._result(kind, model, f"{person.name} — {label} {ret.iso_formatted_local_datetime[:10]}", [("natal", natal), ("return", ret)])
+        return self._result(kind, model, f"{person.name} — {label} {ret.iso_formatted_local_datetime[:10]}", [("natal", natal), ("return", ret)],
+                            {"natal": person.time_known, "return": person.time_known})
 
     def solar_return(self, person: Person, year: Optional[int] = None, location: Optional[Person] = None) -> ChartResult:
         """The next Solar Return on or after 1 January of ``year`` (default: this year)."""

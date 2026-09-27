@@ -3,12 +3,14 @@
   "functions": {
     "api/chart.py": {
       "maxDuration": 30,
-      "memory": 1024,
       "excludeFiles": "{tests/**,examples/**,.venv/**}"
     },
     "api/studio.py": {
       "maxDuration": 30,
-      "memory": 1024,
+      "excludeFiles": "{tests/**,examples/**,.venv/**}"
+    },
+    "api/interpret.py": {
+      "maxDuration": 120,
       "excludeFiles": "{tests/**,examples/**,.venv/**}"
     }
   },

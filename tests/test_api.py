@@ -54,3 +54,9 @@ def test_unknown_time_defaults_to_noon():
 def test_bad_requests(body):
     with pytest.raises(StudioError):
         api.build(body)
+
+
+def test_reading_include():
+    out = api.build({"kind": "natal", "first": A, "include": ["reading"]})
+    assert set(out) >= {"reading"} and "svg" not in out
+    assert out["reading"]["sections"][0]["id"] == "big-three"

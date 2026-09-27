@@ -10,3 +10,8 @@ Giacomo Battaglia, licensed under the GNU AGPL v3, and its dependencies
 (libephemeris AGPL-3.0; skyfield MIT; numpy BSD; pydantic MIT). Chart glyph
 fonts embedded by Kerykeion: Symbola (public domain), Noto Sans Symbols 2 and
 Noto Sans (SIL OFL 1.1).
+
+Chart readings: the AI prompt design (saturnstudio/ai.py) and the Golden Dawn tarot
+correspondence tables (saturnstudio/tarot.py) are adapted from Asteria by Alamahant,
+https://github.com/alamahant/Asteria, licensed AGPL-3.0.
+Rider-Waite-Smith tarot illustrations by Pamela Colman Smith (1909) are in the public domain.

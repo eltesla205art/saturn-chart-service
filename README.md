@@ -9,13 +9,14 @@
   <img src="https://img.shields.io/badge/python-3.12%2B-blue" alt="Python 3.12+">
   <img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0">
   <img src="https://img.shields.io/badge/built%20on-Kerykeion%206-8a2be2" alt="Built on Kerykeion 6">
-  <img src="https://img.shields.io/badge/tests-29%20passing-brightgreen" alt="29 tests passing">
+  <img src="https://img.shields.io/badge/tests-45%20passing-brightgreen" alt="45 tests passing">
 </p>
 
 Give Saturn Studio someone's birth details and get back accurate planetary positions, houses, aspects, signs,
 elements, qualities and Moon-phase information as clean JSON. It also draws good-looking SVG charts for natal,
 synastry, transit, composite, Solar Return and Lunar Return charts, and produces a plain-text report, an AI-friendly
-context string, and a relationship score for two people.
+context string, and a relationship score for two people. It can also **interpret** every chart: a built-in,
+offline reading with tarot correspondences, and an optional deeper reading written by Claude.
 
 Saturn Studio is a thin, opinionated layer over [Kerykeion](https://github.com/g-battaglia/kerykeion) by Giacomo
 Battaglia, which does the astronomy (NASA JPL-based ephemeris) and the chart drawing.
@@ -30,6 +31,7 @@ Battaglia, which does the astronomy (NASA JPL-based ephemeris) and the chart dra
 - [Structured data](#structured-data)
 - [Reports and AI context](#reports-and-ai-context)
 - [Relationship score](#relationship-score)
+- [Chart readings](#chart-readings)
 - [Locations: offline and online](#locations-offline-and-online)
 - [HTTP API](#http-api)
 - [Examples](#examples)
@@ -59,6 +61,7 @@ chart.save_svg("natal.svg")          # the chart image
 print(chart.to_json())               # clean, structured data
 print(chart.report())                # a readable text report
 print(chart.context())               # compact XML for LLM prompts
+print(chart.reading_markdown())      # a built-in, plain-language interpretation
 ```
 
 ```text
@@ -85,6 +88,9 @@ Moon phase: Waning Gibbous
 | Text report | `chart.report()` |
 | AI context serializer | `chart.context()` |
 | Relationship score | `studio.relationship_score(a, b)` or `studio.synastry(a, b).score` |
+| Built-in chart reading (offline) | `chart.interpret()`, `chart.reading_markdown()` |
+| Tarot correspondences | `saturnstudio.cards_for("Sun", "Taurus", 24.6)` |
+| AI deep reading (Claude) | `saturnstudio.ai.deep_reading(chart)` |
 | Online city lookup | `Person.lookup(..., city="Rome", country="IT")` |
 
 ## Chart types
@@ -159,6 +165,33 @@ score = studio.relationship_score(me, partner)
 The score follows Ciro Discepolo's synastry method as implemented in Kerykeion. It is an astrological index, not a
 prediction.
 
+## Chart readings
+
+**Built-in reading (offline, free).** `chart.interpret()` returns a JSON-ready reading for any chart type:
+
+| Chart | Sections |
+| --- | --- |
+| natal / composite | Big Three and chart ruler, planets in signs and houses, key aspects, element and modality balance, birth Moon phase |
+| synastry | relationship score, the two people, house overlays, key inter-aspects |
+| transit | the slow planets' "long weather" through your houses (Saturn first), active transits (applying or separating) |
+| solar / lunar return | the year's or month's Rising sign, Sun and Moon houses, busy planets, return-to-natal contacts |
+
+Each placement carries tarot correspondences in the Golden Dawn system: the planet's Major Arcana card, the sign's card
+and the decan's numbered card (for example, Sun in Taurus 24° gives The Sun, The Hierophant, Seven of Pentacles). If the
+birth time is unknown, the reading leaves out houses and angles and says so.
+
+```python
+reading = chart.interpret()
+reading["sections"][0]["items"][0]
+# {'title': 'Sun in Taurus', 'subtitle': '24°39′ Taurus · 9th house', 'text': 'Your light burns slow and steady…',
+#  'tarot': [{'name': 'The Sun', …}, {'name': 'The Hierophant', …}, {'name': 'Seven of Pentacles', …}]}
+```
+
+**AI deep reading (optional).** `saturnstudio.ai.deep_reading(chart, language="EN")` asks Claude for a flowing,
+700–900 word reading, using a separate system prompt for each chart type. Set `ANTHROPIC_API_KEY` (and optionally
+`ANTHROPIC_MODEL`, default `claude-sonnet-5`). The model only sees anonymized positions, houses and aspects, never
+names, birth dates, times, places or coordinates. See `saturnstudio.ai.anonymized(chart.data)`.
+
 ## Locations: offline and online
 
 - **Offline (recommended):** pass `lat`, `lon` and an IANA `tz` such as `"America/New_York"`. No network needed.
@@ -171,7 +204,11 @@ This repo is also deployed as a Vercel service at `https://chart.whereismysaturn
 
 - `POST /api/studio`: any chart type, returning `svg`, `data`, `report`, `context` and `score`. See the docstring in
   `api/studio.py`.
+- `POST /api/interpret`: the Claude deep reading for the same body (Markdown). `GET` reports whether it is enabled.
+  It only accepts requests from whereismysaturn.com.
 - `POST /api/chart`: a single natal SVG (used by the result page).
+
+Add `"reading"` to `include` on `/api/studio` to get the built-in reading.
 
 ## Examples
 
@@ -182,6 +219,7 @@ This repo is also deployed as a Vercel service at `https://chart.whereismysaturn
 | `examples/03_transits_and_returns.py` | transits now, Solar and Lunar Returns |
 | `examples/04_options_and_ai_context.py` | wheel-only, classic style, Spanish, sidereal, LLM prompt |
 | `examples/05_online_lookup.py` | GeoNames city lookup |
+| `examples/06_reading_and_ai.py` | built-in reading, tarot, anonymized AI payload, Claude deep reading |
 
 ## Tests
 
@@ -190,13 +228,21 @@ pip install -e ".[dev]"
 python -m pytest
 ```
 
-The 29 tests cover reference positions (Saturn 25°14′ Capricorn for the sample chart), every chart type, return
-timing, options, sidereal mode, reports, AI context, the relationship score, the API layer and input validation.
+The 45 tests cover reference positions (Saturn 25°14′ Capricorn for the sample chart), every chart type, return
+timing, options, sidereal mode, reports, AI context, the relationship score, the built-in reading for every chart type, tarot mapping, unknown birth times, the anonymized
+AI payload, the API layer and input validation.
 
 ## Privacy
 
 The service uses birth data in memory for one request and never stores or logs it. Requests carry data in the body,
 not the URL. Responses are `no-store`, and CORS only admits whereismysaturn.com.
+
+## Credits
+
+- [Kerykeion](https://github.com/g-battaglia/kerykeion) by Giacomo Battaglia (AGPL-3.0): astronomy and chart drawing.
+- [Asteria](https://github.com/alamahant/Asteria) by Alamahant (AGPL-3.0): the per-chart-type AI prompt design and
+  the Golden Dawn tarot correspondence tables.
+- Rider-Waite-Smith tarot art by Pamela Colman Smith (1909), public domain.
 
 ## License
 

@@ -3,3 +3,6 @@ __pycache__/
 .venv/
 .vercel
 .env*
+out/
+*.egg-info/
+.pytest_cache/

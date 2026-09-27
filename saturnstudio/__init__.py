@@ -13,6 +13,8 @@ saturnstudio — a friendly, app-ready astrology toolkit built on Kerykeion.
     chart.to_json()      # JSON string
     chart.report()       # plain-text report
     chart.context()      # AI-friendly XML context for LLM prompts
+    chart.interpret()    # built-in plain-language reading (dict) with tarot correspondences
+    chart.reading_markdown()
 
 Chart types: natal, synastry, transit, composite, solar_return, lunar_return.
 Relationship score: studio.relationship_score(a, b) or studio.synastry(a, b).score
@@ -32,6 +34,8 @@ from .core import (
     Studio,
     StudioError,
 )
+from .interpret import interpret, to_markdown
+from .tarot import cards_for
 
 __all__ = [
     "Person",
@@ -45,5 +49,8 @@ __all__ = [
     "LANGUAGES",
     "AYANAMSAS",
     "HOUSE_SYSTEMS",
+    "interpret",
+    "to_markdown",
+    "cards_for",
 ]
-__version__ = "1.0.0"
+__version__ = "1.1.0"
